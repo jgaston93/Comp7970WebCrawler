@@ -1,14 +1,15 @@
-import urllib.request
+from urllib.parse import urlsplit
+from urllib.request import urlopen
 from html.parser import HTMLParser
 
 # This function gets the raw HTML string given a url
 # returns empty string if there is an HTTP Error
 def GetHTML(URL):
 	try:
-		with urllib.request.urlopen(URL) as f:
+		with urlopen(URL) as f:
 			return f.read().decode("utf-8", errors="replace")
-	except urllib.error.HTTPError as err:
-		print(err)
+	except Exception as e:
+		print(str(e))
 		return ""
 
 # This function uses the HTML Parser class to add all the absolute links on the page to the stack
@@ -18,12 +19,18 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 	parser.initLinks()
 	parser.feed(html)
 
+	SplitResult = urlsplit(parentURL)
+
 	# Filters out URLs and adds them to the stack
 	links = parser.getLinks()
-	print(str(len(links)) + " links found")
 	for link in links:
-		if len(link) > 3 and link[0:4] == "http":
+		if len(link) > 3 and link[0:4] == "http":	# Absolute URL
 			stack.append((parentLevel + 1, link))
+		elif len(link) > 0 and link[0] == "/":		# Relative URL
+			if len(link) > 1 and link[1] == "/":
+				stack.append((parentLevel + 1, SplitResult[0] + ":" + link))
+			else:
+				stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link))
 
 # This class handles the parsing of the HTML
 # It gets the href value of each of the anchor tags on the page
@@ -53,9 +60,9 @@ for i in range(level):
 	# Start the DFS Search
 	while len(stack) > 0:
 		# Pops off the top node of the stack and gets the raw HTML string
-		node = queue.pop()
-		HTMLString = GetHTML(node[1])
+		node = stack.pop()
 		print(str(node[0]) + ": " + node[1])
+		HTMLString = GetHTML(node[1])
 
 		# Uni-gram feature extraction
 
