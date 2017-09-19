@@ -15,7 +15,6 @@ def GetHTML(URL):
 
 # This function uses the HTML Parser class to add all the absolute links on the page to the stack
 def ParseHTML(parser, html, parentURL, parentLevel):
-
 	# Resets list of links and feeds the HTML to the parser
 	parser.initLinks()
 	parser.feed(html)
@@ -34,15 +33,18 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 				stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link))
 
 # Extracts unigrams and returns a feature vector
-def ExtractUnigram(htmlString):
-	featureSet = dict()
+def ExtractUnigram(url, htmlString):
+	if url in featureSet:
+		return featureSet[url]
+	else:
+		featureSet[url] = {}
 
 	for feature in list(htmlString):
 		key = str(feature)
-		if key in featureSet.keys():
-			featureSet[key] += 1
+		if key in featureSet[url]:
+			featureSet[url][key] += 1
 		else:
-			featureSet[key] = 1
+			featureSet[url][key] = 1
 
 	return featureSet
 
@@ -65,6 +67,8 @@ class MyHTMLParser(HTMLParser):
 
 parser = MyHTMLParser()
 
+featureSet = {}
+
 # Outer loop for the iterative deepening
 level = 4
 for i in range(level):
@@ -76,17 +80,18 @@ for i in range(level):
 		# Pops off the top node of the stack and gets the raw HTML string
 		node = stack.pop()
 		print("\n" + str(node[0]) + ": " + node[1])
+
 		HTMLString = GetHTML(node[1])
 
 		# Uni-gram feature extraction
-		featureVector = ExtractUnigram(HTMLString)
+		featureVector = ExtractUnigram(str(node[1]), HTMLString)
 		print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
 
 		# Save the html into text files
+
 
 		# If the max depth has not been reached add the chilren nodes to the stack
 		if node[0] < i:
 			ParseHTML(parser, HTMLString, node[1], node[0])
 		
-
 parser.close()
