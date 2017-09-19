@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 from html.parser import HTMLParser
@@ -32,6 +33,19 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 			else:
 				stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link))
 
+# Extracts unigrams and returns a feature vector
+def ExtractUnigram(htmlString):
+	featureSet = dict()
+
+	for feature in list(htmlString):
+		key = str(feature)
+		if key in featureSet.keys():
+			featureSet[key] += 1
+		else:
+			featureSet[key] = 1
+
+	return featureSet
+
 # This class handles the parsing of the HTML
 # It gets the href value of each of the anchor tags on the page
 class MyHTMLParser(HTMLParser):
@@ -61,10 +75,12 @@ for i in range(level):
 	while len(stack) > 0:
 		# Pops off the top node of the stack and gets the raw HTML string
 		node = stack.pop()
-		print(str(node[0]) + ": " + node[1])
+		print("\n" + str(node[0]) + ": " + node[1])
 		HTMLString = GetHTML(node[1])
 
 		# Uni-gram feature extraction
+		featureVector = ExtractUnigram(HTMLString)
+		print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
 
 		# Save the html into text files
 
