@@ -24,13 +24,24 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 	# Filters out URLs and adds them to the stack
 	links = parser.getLinks()
 	for link in links:
-		if len(link) > 3 and link[0:4] == "http":	# Absolute URL
-			stack.append((parentLevel + 1, link))
-		elif len(link) > 0 and link[0] == "/":		# Relative URL
-			if len(link) > 1 and link[1] == "/":
-				stack.append((parentLevel + 1, SplitResult[0] + ":" + link))
+		linkLength = len(link)
+		if linkLength > 0 and link[0] == "#":
+			continue
+		if linkLength > 3 and link[0:4] == "http":
+			stack.append((parentLevel + 1, link))	# Abosulte 
+		elif linkLength > 1:
+			if link[0] == "/":
+				if link[1] == "/":
+					stack.append((parentLevel + 1, SplitResult[0] + ":" + link))	# Protocol relative
+				else:
+					stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link)) # Root relative
+			elif link[0] == ".":
+				if link[1] == ".":
+					pass
+				elif link[1] == "/":
+					stack.append((parentLevel + 1, parentURL + link[1:]))
 			else:
-				stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link))
+				stack.append((parentLevel + 1, parentURL + link))	# Path relative
 
 # Extracts unigrams and returns a feature vector
 def ExtractUnigram(url, htmlString):
@@ -47,6 +58,11 @@ def ExtractUnigram(url, htmlString):
 			featureSet[url][key] = 1
 
 	return featureSet
+	
+# Saves the html as a text file
+def SaveHTML(htmlString, filename):
+	with open(str(filename) + ".txt", "w", encoding = "utf-8") as f:
+		f.write(htmlString)
 
 # This class handles the parsing of the HTML
 # It gets the href value of each of the anchor tags on the page
@@ -75,6 +91,7 @@ for i in range(level):
 	# Initialize the stack with the seed URL
 	stack = [(0,"http://asdf.com/")]
 
+	filenum = 0
 	# Start the DFS Search
 	while len(stack) > 0:
 		# Pops off the top node of the stack and gets the raw HTML string
@@ -88,6 +105,8 @@ for i in range(level):
 		print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
 
 		# Save the html into text files
+		SaveHTML(HTMLString, str(i) + str(filenum))
+		filenum = filenum + 1
 
 
 		# If the max depth has not been reached add the chilren nodes to the stack
