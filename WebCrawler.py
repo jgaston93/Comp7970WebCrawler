@@ -83,12 +83,12 @@ class MyHTMLParser(HTMLParser):
 parser = MyHTMLParser()
 
 featureSet = {}
-
 # Outer loop for the iterative deepening
 level = 4
 for i in range(level):
+	
 	# Initialize the stack with the seed URL
-	stack = [(0,"http://asdf.com/")]
+	stack = [(0,"http://google.com/")]
 
 	filenum = 0
 	# Start the DFS Search
@@ -96,6 +96,13 @@ for i in range(level):
 		# Pops off the top node of the stack and gets the raw HTML string
 		node = stack.pop()
 		print("\n" + str(node[0]) + ": " + node[1])
+
+		# If the max depth has not been reached add the chilren nodes to the stack
+		if node[0] < i:
+			ParseHTML(parser, HTMLString, node[1], node[0])
+
+		if node[1] in featureSet:
+			continue
 
 		HTMLString = GetHTML(node[1])
 
@@ -106,9 +113,5 @@ for i in range(level):
 		# Save the html into text files
 		SaveHTML(HTMLString, str(i) + str(filenum))
 		filenum = filenum + 1
-
-		# If the max depth has not been reached add the chilren nodes to the stack
-		if node[0] < i:
-			ParseHTML(parser, HTMLString, node[1], node[0])
 		
 parser.close()
