@@ -20,43 +20,65 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 	parser.feed(html)
 
 	SplitResult = urlsplit(parentURL)
+	SameDomain = []
+	DifferentDomain = []
 
 	# Filters out URLs and adds them to the stack
 	links = parser.getLinks()
 	for link in links:
+
+		# Create the URL for the given HREF
 		linkLength = len(link)
+		childURL = ""
 		if linkLength > 0 and link[0] == "#":
-			continue
+			continue	# Skip page relative links
 		if linkLength > 3 and link[0:4] == "http":
-			stack.append((parentLevel + 1, link))	# Abosulte 
-		elif linkLength > 1:
+			childURL = link	# Abosulte 
+		elif linkLength > 0:
 			if link[0] == "/":
-				if link[1] == "/":
-					stack.append((parentLevel + 1, SplitResult[0] + ":" + link))	# Protocol relative
+				if linkLength > 1 and link[1] == "/":
+					childURL = SplitResult[0] + ":" + link	# Protocol relative
 				else:
-					stack.append((parentLevel + 1, SplitResult[0] + "://" + SplitResult[1] + link)) # Root relative
+					childURL = SplitResult[0] + "://" + SplitResult[1] + link # Root relative
 			elif link[0] == ".":
 				if link[1] == ".":
-					pass
+					continue						# Directory traversal (todo)
 				elif link[1] == "/":
-					stack.append((parentLevel + 1, parentURL + link[1:]))
+					childURL = parentURL + link[1:]	# Path relative
 			else:
-				stack.append((parentLevel + 1, parentURL + link))	# Path relative
+				childURL = parentURL + link	# Path relative
+
+		# Divide URLs based on there NetLoc produced from the urlsplit function
+		childSplitResult = urlsplit(childURL)
+		if childSplitResult[1] == SplitResult[1]:
+			SameDomain.append((parentLevel + 1, childURL))
+		else:
+			DifferentDomain.append((parentLevel + 1, childURL))
+
+		# Add the different NetLocs on top so they get explored first
+		stack.extend(SameDomain)
+		stack.extend(DifferentDomain)
+
+# Initializes the dictionary of unigram features
+def GenerateUnigramsFeatureList():
+	InitialFeatureList = {}
+	for c in range(ord(" "), ord("~") + 1):
+		InitialFeatureList[chr(c)] = 0
+	return InitialFeatureList
 
 # Extracts unigrams and returns a feature vector
 def ExtractUnigram(url, htmlString):
 	if url in featureSet:
 		return featureSet[url]
 	else:
-		featureSet[url] = {}
+		featureSet[url] = GenerateUnigramsFeatureList()
 
 	for feature in list(htmlString):
 		key = str(feature)
 		if key in featureSet[url]:
 			featureSet[url][key] += 1
-		else:
-			featureSet[url][key] = 1
-
+	for key in featureSet[url]:
+		featureSet[url][key] = featureSet[url][key]/len(htmlString)
 	return featureSet[url]
 	
 # Saves the html as a text file
@@ -88,7 +110,7 @@ level = 4
 for i in range(level):
 	
 	# Initialize the stack with the seed URL
-	stack = [(0,"http://google.com/")]
+	stack = [(0,"http://asdf.com/")]
 
 	filenum = 0
 	# Start the DFS Search
@@ -96,6 +118,9 @@ for i in range(level):
 		# Pops off the top node of the stack and gets the raw HTML string
 		node = stack.pop()
 		print("\n" + str(node[0]) + ": " + node[1])
+		HTMLString = GetHTML(node[1])
+		if HTMLString == "":
+			continue
 
 		# If the max depth has not been reached add the chilren nodes to the stack
 		if node[0] < i:
@@ -103,8 +128,6 @@ for i in range(level):
 
 		if node[1] in featureSet:
 			continue
-
-		HTMLString = GetHTML(node[1])
 
 		# Uni-gram feature extraction
 		featureVector = ExtractUnigram(str(node[1]), HTMLString)
