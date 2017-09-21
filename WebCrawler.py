@@ -46,18 +46,23 @@ def ParseHTML(parser, html, parentURL, parentLevel):
 				elif link[1] == "/":
 					childURL = parentURL + link[1:]	# Path relative
 			else:
-				childURL = parentURL + link	# Path relative
+				if parentURL[-1] == "/":
+					childURL = parentURL + link	# Path relative
+				else:
+					childURL = SplitResult[0] + "://" + SplitResult[1] + "/" + link # Root relative
+				
 
 		# Divide URLs based on there NetLoc produced from the urlsplit function
 		childSplitResult = urlsplit(childURL)
-		if childSplitResult[1] == SplitResult[1]:
-			SameDomain.append((parentLevel + 1, childURL))
-		else:
-			DifferentDomain.append((parentLevel + 1, childURL))
+		if len(SameDomain) + len(DifferentDomain) < branchingFactor:
+			if childSplitResult[1] == SplitResult[1]:
+				SameDomain.append((parentLevel + 1, childURL))
+			else:
+				DifferentDomain.append((parentLevel + 1, childURL))
 
-		# Add the different NetLocs on top so they get explored first
-		stack.extend(SameDomain)
-		stack.extend(DifferentDomain)
+	# Add the different NetLocs on top so they get explored first
+	stack.extend(SameDomain)
+	stack.extend(DifferentDomain)
 
 # Initializes the dictionary of unigram features
 def GenerateUnigramsFeatureList():
@@ -107,6 +112,7 @@ parser = MyHTMLParser()
 featureSet = {}
 # Outer loop for the iterative deepening
 level = 4
+branchingFactor = 2
 for i in range(level):
 	
 	# Initialize the stack with the seed URL
@@ -126,6 +132,7 @@ for i in range(level):
 		if node[0] < i:
 			ParseHTML(parser, HTMLString, node[1], node[0])
 
+		# Skip feature extraction if it's already been done on this node
 		if node[1] in featureSet:
 			continue
 
@@ -136,5 +143,7 @@ for i in range(level):
 		# Save the html into text files
 		SaveHTML(HTMLString, str(i) + str(filenum))
 		filenum = filenum + 1
+
+		# Ask this node if it is the solution
 		
 parser.close()
