@@ -3,6 +3,7 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
+import datetime
 
 ###############################################################################################
 ### Feature set format: 
@@ -11,7 +12,7 @@ import hashlib
 
 # Takes url and returns unique name for use in filename and 
 # feature set
-def fileNameForUrl(url):
+def FileNameForUrl(url):
 	m = hashlib.md5()
 	m.update(url.encode('utf-8'))
 	return str(int(m.hexdigest(), 16))[0:12] + ".txt"
@@ -30,7 +31,7 @@ def GetHTML(url):
 		with urlopen(url) as f:
 			return f.read().decode("utf-8", errors="replace")
 	except Exception as e:
-		print(str(e))
+		#print(str(e))
 		return ""
 
 # This function uses the HTML Parser class to add all the absolute links on the page to the stack
@@ -95,7 +96,7 @@ def ExtractUnigram(url, htmlString):
 	if url in featureSet:
 		return featureSet[url]
 	else:
-		name = fileNameForUrl(url)
+		name = FileNameForUrl(url)
 		featureSet[url] = (name, GenerateUnigramsFeatureList())
 
 	for feature in list(htmlString):
@@ -110,7 +111,7 @@ def ExtractUnigram(url, htmlString):
 	
 # Saves the html as a text file
 def SaveHTML(htmlString, url):
-	filename = fileNameForUrl(url)
+	filename = FileNameForUrl(url)
 	with open(str(filename), "w", encoding = "utf-8") as f:
 		f.write(htmlString)
 
@@ -130,45 +131,70 @@ class MyHTMLParser(HTMLParser):
 				if attr[0] == "href" and attr[1] is not None:
 					self.links.append(attr[1])
 
-parser = MyHTMLParser()
+ExpandedNodes = 0
+DuplicateNodes = 0
 
+
+with open("results.txt", "a") as f:
+	f.write("Depth,SameBranchingFactor,DifferentBranchingFactor,ExpandedNodes,DuplicatesExpanded,Time\n")
 featureSet = {}
 # Outer loop for the iterative deepening
-level = 4
-
-DifferentBranchingFactor = 4
-SameBranchingFactor = 2
-for i in range(level):
+level = 0
+DifferentBranchingFactor = 0
+SameBranchingFactor = 0
+for i in range(2, 5):
+	level = i
+	for j in range(1,5):
+		featureSet = {}
+		ExpandedNodes = 0
+		DuplicateNodes = 0
+		parser = MyHTMLParser()
+		DifferentBranchingFactor = 2**j
+		SameBranchingFactor = 2**(j-1)
+		start = datetime.datetime.now()
+		for i in range(level):
 	
-	# Initialize the stack with the seed URL
-	stack = [(0, "http://asdf.com/")]
-	# Start the DFS Search
-	while len(stack) > 0:
-		# Pops off the top node of the stack and gets the raw HTML string
-		node = stack.pop()
+			# Initialize the stack with the seed URL
+			stack = [(0, "http://asdf.com/")]
+			# Start the DFS Search
+			while len(stack) > 0:
+				# Pops off the top node of the stack and gets the raw HTML string
+				node = stack.pop()
 
-		# Unique name for this node to be used for filename and key in featureSet
-		print("\n" + str(node[0]) + ": " + node[1])
+				# Unique name for this node to be used for filename and key in featureSet
+				#print("\n" + str(node[0]) + ": " + node[1])
 
-		HTMLString = GetHTML(node[1])
-		if HTMLString == "":
-			continue
+				HTMLString = GetHTML(node[1])
+				if HTMLString == "":
+					continue
+		
+				ExpandedNodes = ExpandedNodes + 1
+				# If the max depth has not been reached add the chilren nodes to the stack
+				if node[0] < i:
+					ParseHTML(parser, HTMLString, node[1], node[0])
 
-		# If the max depth has not been reached add the chilren nodes to the stack
-		if node[0] < i:
-			ParseHTML(parser, HTMLString, node[1], node[0])
+				# Skip feature extraction if it's already been done on this node
+				if node[1] in featureSet:
+					DuplicateNodes = DuplicateNodes + 1
+					continue
 
-		# Skip feature extraction if it's already been done on this node
-		if node[1] in featureSet:
-			continue
+				# Uni-gram feature extraction
+				featureVector = ExtractUnigram(node[1], HTMLString)
+				#print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
 
-		# Uni-gram feature extraction
-		featureVector = ExtractUnigram(node[1], HTMLString)
-		print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
+				# TODO Ask this node if it is the solution
 
-		# TODO Ask this node if it is the solution
+				# Save the html into text files
+				#SaveHTML(HTMLString, node[1])
 
-		# Save the html into text files
-		SaveHTML(HTMLString, node[1])
-
-parser.close()
+		
+		end = datetime.datetime.now()
+		parser.close()
+		with open("results.txt", "a") as f:
+			f.write(str(level) + "," + str(SameBranchingFactor) + "," + str(DifferentBranchingFactor) + "," + str(ExpandedNodes) + "," + str(DuplicateNodes) + "," + str(end - start) + "\n")
+		print("Depth: " + str(level))
+		print("Same Branching factor: " + str(SameBranchingFactor))
+		print("Different Branching factor: " + str(DifferentBranchingFactor))
+		print("Nodes expanded: " + str(ExpandedNodes))
+		print("Duplicates expanded: " + str(DuplicateNodes))
+		print("Time:" + str(end - start))
