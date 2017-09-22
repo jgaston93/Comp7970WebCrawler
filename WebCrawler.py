@@ -4,21 +4,26 @@ from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
 
+###############################################################################################
+### Feature set format: 
+### {"url.com": (filename, featureVectorDict )}
+###############################################################################################
+
 # Takes url and returns unique name for use in filename and 
 # feature set
-def hashForUrl(url):
+def fileNameForUrl(url):
 	m = hashlib.md5()
 	m.update(url.encode('utf-8'))
-	return str(int(m.hexdigest(), 16))[0:12]
+	return str(int(m.hexdigest(), 16))[0:12] + ".txt"
 
 
 # This function gets the raw HTML string given a url
 # returns empty string if there is an HTTP Error
 def GetHTML(url):
 	# see if we already saved this page's html
-	name = hashForUrl(url)
+	name = fileNameForUrl(url)
 	if name in featureSet:
-		file = open(name + ".txt", "r")
+		file = open(name, "r")
 		return file.read()
 
 	try:
@@ -91,7 +96,7 @@ def ExtractUnigram(url, htmlString):
 	if url in featureSet:
 		return featureSet[url]
 	else:
-		name = hashForUrl(url)
+		name = fileNameForUrl(url)
 		featureSet[url] = (name, GenerateUnigramsFeatureList())
 
 	for feature in list(htmlString):
@@ -106,8 +111,8 @@ def ExtractUnigram(url, htmlString):
 	
 # Saves the html as a text file
 def SaveHTML(htmlString, url):
-	filename = hashForUrl(url)
-	with open(str(filename) + ".txt", "w", encoding = "utf-8") as f:
+	filename = fileNameForUrl(url)
+	with open(str(filename), "w", encoding = "utf-8") as f:
 		f.write(htmlString)
 
 # This class handles the parsing of the HTML
