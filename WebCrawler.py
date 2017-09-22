@@ -2,12 +2,27 @@
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 from html.parser import HTMLParser
+import hashlib
+
+# Takes url and returns unique name for use in filename and 
+# feature set
+def hashForUrl(url):
+	m = hashlib.md5()
+	m.update(url.encode('utf-8'))
+	return str(int(m.hexdigest(), 16))[0:12]
+
 
 # This function gets the raw HTML string given a url
 # returns empty string if there is an HTTP Error
-def GetHTML(URL):
+def GetHTML(url):
+	# see if we already saved this page's html
+	name = hashForUrl(url)
+	if name in featureSet:
+		file = open(name + ".txt", "r")
+		return file.read()
+
 	try:
-		with urlopen(URL) as f:
+		with urlopen(url) as f:
 			return f.read().decode("utf-8", errors="replace")
 	except Exception as e:
 		print(str(e))
@@ -76,18 +91,22 @@ def ExtractUnigram(url, htmlString):
 	if url in featureSet:
 		return featureSet[url]
 	else:
-		featureSet[url] = GenerateUnigramsFeatureList()
+		name = hashForUrl(url)
+		featureSet[url] = (name, GenerateUnigramsFeatureList())
 
 	for feature in list(htmlString):
 		key = str(feature)
-		if key in featureSet[url]:
-			featureSet[url][key] += 1
-	for key in featureSet[url]:
-		featureSet[url][key] = featureSet[url][key]/len(htmlString)
+		if key in featureSet[url][1]:
+			featureSet[url][1][key] += 1
+
+	for key in featureSet[url][1]:
+		featureSet[url][1][key] = featureSet[url][1][key]/len(htmlString)
+
 	return featureSet[url]
 	
 # Saves the html as a text file
-def SaveHTML(htmlString, filename):
+def SaveHTML(htmlString, url):
+	filename = hashForUrl(url)
 	with open(str(filename) + ".txt", "w", encoding = "utf-8") as f:
 		f.write(htmlString)
 
@@ -116,14 +135,15 @@ branchingFactor = 2
 for i in range(level):
 	
 	# Initialize the stack with the seed URL
-	stack = [(0,"http://asdf.com/")]
-
-	filenum = 0
+	stack = [(0, "http://asdf.com/")]
 	# Start the DFS Search
 	while len(stack) > 0:
 		# Pops off the top node of the stack and gets the raw HTML string
 		node = stack.pop()
+
+		# Unique name for this node to be used for filename and key in featureSet
 		print("\n" + str(node[0]) + ": " + node[1])
+
 		HTMLString = GetHTML(node[1])
 		if HTMLString == "":
 			continue
@@ -137,13 +157,12 @@ for i in range(level):
 			continue
 
 		# Uni-gram feature extraction
-		featureVector = ExtractUnigram(str(node[1]), HTMLString)
+		featureVector = ExtractUnigram(node[1], HTMLString)
 		print("Unigram feature set for " + node[1] + ":\n" + str(featureVector))
 
-		# Save the html into text files
-		SaveHTML(HTMLString, str(i) + str(filenum))
-		filenum = filenum + 1
+		# TODO Ask this node if it is the solution
 
-		# Ask this node if it is the solution
-		
+		# Save the html into text files
+		SaveHTML(HTMLString, node[1])
+
 parser.close()
