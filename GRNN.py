@@ -18,7 +18,7 @@ class GRNN(object):
 
     def _h_function(self, t_q, t_i):
         distance = euclidian_distance(t_i, t_q)
-        return math.e**(-distance/(2*self.standard_deviation**2))
+        return math.e**(-(distance**2)/(2*self.standard_deviation**2))
 
     def classify(self, instance):
         """Performs classification on the given instance"""
