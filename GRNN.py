@@ -1,12 +1,6 @@
 """Module for GRNN classifier"""
 import math
-
-def euclidian_distance(vector1, vector2):
-    """Calculates the euclidian distance between two vectors"""
-    result = 0
-    for x_value, y_value in zip(vector1, vector2):
-        result = result + (y_value - x_value)**2
-    return result**(1/2)
+from Helpers import euclidian_distance
 
 class GRNN(object):
     """GRNN classifier"""

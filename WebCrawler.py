@@ -120,6 +120,10 @@ def save_html(html_string, url):
     with open(str(file_name), "w", encoding="utf-8") as f:
         f.write(html_string)
 
+def save_feature_vector(url):
+    vector_dict = feature_set[url]
+    
+
 # This class handles the parsing of the HTML
 # It gets the href value of each of the anchor tags on the page
 class MyHTMLParser(HTMLParser):
@@ -179,5 +183,6 @@ for i in range(level):
 
         # Save the html into text files
         save_html(html_string, node[1])
+        save_feature_vector(node[1])
 
 parser.close()
