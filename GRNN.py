@@ -1,7 +1,8 @@
 """Module for GRNN classifier"""
+import math
 
 def euclidian_distance(vector1, vector2):
-	"""Calculates the euclidian distance between two vectors"""
+    """Calculates the euclidian distance between two vectors"""
     result = 0
     for x_value, y_value in zip(vector1, vector2):
         result = result + (y_value - x_value)**2
@@ -16,7 +17,7 @@ class GRNN(object):
         self.standard_deviation = standard_deviation
 
     def _h_function(self, t_q, t_i):
-        distance = _euclidian_distance(t_i, t_q)
+        distance = euclidian_distance(t_i, t_q)
         return math.e**(-distance/(2*self.standard_deviation**2))
 
     def classify(self, instance):
