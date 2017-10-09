@@ -7,6 +7,7 @@ def leave_one_out_validation(classifier, data_set):
     false_positive = 0
     false_negative = 0
     for index in range(len(data_set)):
+        training_set = data_set[0:index] + data_set[index+1:]
         validation_instance = data_set[index]
         classifier.load_data(training_set)
         classification_result = classifier.classify(validation_instance[0])
