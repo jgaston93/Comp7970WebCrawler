@@ -14,6 +14,15 @@ class GRNN(object):
         distance = euclidian_distance(t_i, t_q)
         return math.e**(-(distance**2)/(2*self.standard_deviation**2))
 
+    def load_data(self, training_data):
+        """Clears any old training instances loads new training data"""
+        """training data format [(instance, label),(instance, label),...]"""
+        self.neurons = []
+        self.weights = []
+        for instance in training_data:
+            self.neurons.append(instance[0])
+            self.weights.append(instance[1])
+
     def classify(self, instance):
         """Performs classification on the given instance"""
         numerator = 0
