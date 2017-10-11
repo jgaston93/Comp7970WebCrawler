@@ -5,17 +5,15 @@ def euclidian_distance(vector1, vector2):
         result = result + (y_value - x_value)**2
     return result**(1/2)
 
-def load_dataset(filename, split_ratio=0.5):
-    test_set = []
-    training_set = []
-    with open(filename, 'csv'):
-	    lines = csv.reader(csvfile)
-	    dataset = list(lines)
-	    for x in range(len(dataset)-1):
-	        for y in range(4):
-	            dataset[x][y] = float(dataset[x][y])
-	        if random.random() < split:
-	            trainingSet.append(dataset[x])
-	        else:
-	            testSet.append(dataset[x])
-    return (training_set, test_set)
+def load_dataset(file_name):
+    dataset = []
+    with open(file_name, "r") as data_file:
+        for line in data_file:
+            data_values = line.split(" ")
+            label = float(data_values[1])
+            temp = []
+            for value in data_values[2:97]:
+                    temp.append(float(value))
+            instance = tuple(temp)
+            dataset.append((instance, label))
+        return dataset
