@@ -21,5 +21,5 @@ def leave_one_out_validation(classifier, data_set):
                 false_negative = false_negative + 1
             else:
                 true_negative = true_negative + 1
-    return (true_positive, true_negative, false_positive, false_negative)
+    return (true_positive + true_negative)/(true_positive + true_negative + false_positive + false_negative)
         
