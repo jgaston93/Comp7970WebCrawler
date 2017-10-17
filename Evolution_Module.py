@@ -31,8 +31,6 @@ def Replace_Worst_Parents(population, children):
     population[parent_1_index] = children[0]
     population[parent_2_index] = children[1]
 
-
-
 def calc_generation_mean_fitness(population):
     sum = 0
     for individual in population:

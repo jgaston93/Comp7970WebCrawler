@@ -10,12 +10,13 @@ class K_Nearest(object):
 
         for i in range(len(trainingData)):
             distance = euclidean_distance(testDataItem, trainingData[i])
-            distances.append((trainingSet[x], dist))
+            distances.append((trainingSet[x], distance))
 
         distances.sort(key=operator.itemgetter(1))
 
         neighbors = []
 
+        # collect k nearest neighbors
         for i in range(k):
             neighbors.append(distances[i][0])
 
@@ -26,7 +27,7 @@ class K_Nearest(object):
         classification = {}
 
         for i in range(len(instance)):
-            category = instance[x][-1]
+            category = instance[i][-1]
             if category in classification:
                 classification[response] += 1
             else:
@@ -35,6 +36,6 @@ class K_Nearest(object):
         sortedClassification = sorted(classification.iteritems(), 
                                     key=operator.itemgetter(1), 
                                     reverse=True)
-        return sortedVotes[0][0]
 
-load_dataset('our_dataset.txt')
+        # return most frequently occuring neighbor
+        return sortedClassification[0][0]
