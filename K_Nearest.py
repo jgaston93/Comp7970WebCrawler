@@ -1,31 +1,31 @@
 import random
 import operator
-from Helpers import euclidian_distance, load_dataset
+from Helpers import euclidian_distance
+from Helpers import load_dataset
 
 class K_Nearest(object):
     """K nearest neighbor classifier"""
 
-    def __init__(self, distance_weighted=False, training_data=[], feature_mask =[1 for _ in range(95)]):
+    def __init__(self, k=3, distance_weighted=False, training_data=[], feature_mask =[1 for _ in range(95)]):
+        self.k = k
         self.distance_weighted = distance_weighted
         self.training_data = training_data
         self.feature_mask = feature_mask
 
-    def get_neighbors(self, k, trainingData, testDataItem):
+    def get_neighbors(self, instance):
         distances = []
 
-        for i in range(len(trainingData)):
-            distance = euclidean_distance(testDataItem, trainingData[i])
-            distances.append((trainingSet[x], distance))
+        for i in range(len(self.training_data)):
+            distance = euclidian_distance(instance, self.training_data[i][0])
+            distances.append((self.training_data[i], distance))
 
         distances.sort(key=operator.itemgetter(1))
 
-        neighbors = []
+        self.neighbors = []
 
         # collect k nearest neighbors
-        for i in range(k):
-            neighbors.append(distances[i][0])
-
-        return neighbors
+        for i in range(self.k):
+            self.neighbors.append(distances[i][0])
 
     def load_data(self, training_data):
         """Loads new training data"""
@@ -34,21 +34,19 @@ class K_Nearest(object):
 
     def classify(self, instance):
         """Performs classification on the given instance"""
-        classification = {}
+        
+        self.get_neighbors(instance)
 
-        for training_instance in self.training_data:
-            category = training_instance[1]
-            voteValue = (1 / category[1]) if self.distance_weighted else 1
-            if category in classification:
-                classification[category] += voteValue
-            else:
-                classification[category] = voteValue
+        classification = {1: 0, -1: 0}
 
-        sortedClassification = sorted(classification.iteritems(), 
-                                    key=operator.itemgetter(1), 
-                                    reverse=True)
+        for neighbor in self.neighbors:
+            category = neighbor[1]
+            distance = neighbor[0][1]
 
-        instanceClass = 1 if classification[1] > classification[-1] else -1
-
+            voteValue = 1 if not self.distance_weighted or distance == 0 else (1 / distance)
+            classification[category] += voteValue
+        
         # return most frequently occuring neighbor
-        return instanceClass
+
+
+        return 1 if classification[1] > classification[-1] else -1
