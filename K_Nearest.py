@@ -5,7 +5,8 @@ from Helpers import euclidian_distance, load_dataset
 class K_Nearest(object):
     """K nearest neighbor classifier"""
 
-    def __init__(self, training_data=[], feature_mask =[1 for _ in range(95)]):
+    def __init__(self, distance_weighted=False, training_data=[], feature_mask =[1 for _ in range(95)]):
+        self.distance_weighted = distance_weighted
         self.training_data = training_data
         self.feature_mask = feature_mask
 
@@ -26,7 +27,7 @@ class K_Nearest(object):
 
         return neighbors
 
-     def load_data(self, training_data):
+    def load_data(self, training_data):
         """Loads new training data"""
         """training data format [(instance, label),(instance, label),...]"""
         self.training_data = training_data
@@ -35,16 +36,19 @@ class K_Nearest(object):
         """Performs classification on the given instance"""
         classification = {}
 
-        for i in range(len(instance)):
-            category = instance[i][-1]
+        for training_instance in self.training_data:
+            category = training_instance[1]
+            voteValue = (1 / category[1]) if self.distance_weighted else 1
             if category in classification:
-                classification[response] += 1
+                classification[category] += voteValue
             else:
-                classification[response] = 1
+                classification[category] = voteValue
 
         sortedClassification = sorted(classification.iteritems(), 
                                     key=operator.itemgetter(1), 
                                     reverse=True)
 
+        instanceClass = 1 if classification[1] > classification[-1] else -1
+
         # return most frequently occuring neighbor
-        return sortedClassification[0][0]
+        return instanceClass

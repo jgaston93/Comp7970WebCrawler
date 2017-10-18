@@ -1,4 +1,5 @@
 from GRNN import GRNN
+from K_Nearest import K_Nearest
 from Validation import leave_one_out_validation
 from Helpers import load_dataset
 from Evolution_Module import Feature_Evolution
@@ -10,6 +11,10 @@ mask = []
 #    mask.append(int(c))
 g = GRNN(standard_deviation = 0.24)
 print(leave_one_out_validation(g, dataset))
+
+kNN = K_Nearest()
+print(leave_one_out_validation(kNN, dataset))
+
 #Feature_Evolution(g, dataset)
 
 #for i in range(168, 0, -1):
