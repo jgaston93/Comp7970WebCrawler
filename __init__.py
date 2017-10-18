@@ -8,7 +8,7 @@ dataset = load_dataset("our_dataset.txt")
 mask = []
 #for c in "10100101010101011100110011111111100111100000111011011110000011001011110111100101101110101000111":
 #    mask.append(int(c))
-g = GRNN(standard_deviation = 0.24)
+g = GRNN(standard_deviation = 0.0201)
 print(leave_one_out_validation(g, dataset))
 #Feature_Evolution(g, dataset)
 
