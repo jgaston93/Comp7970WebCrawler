@@ -11,8 +11,14 @@ class K_Nearest(object):
         self.distance_weighted = distance_weighted
         self.training_data = training_data
         self.feature_mask = feature_mask
+        self.neighbors = None
+        random.seed(1716)
 
     def get_neighbors(self, instance):
+        if self.neighbors is not None:
+            # Only need to calculate neighbors once
+            return self.neighbors
+
         distances = []
 
         for i in range(len(self.training_data)):
@@ -42,11 +48,17 @@ class K_Nearest(object):
         for neighbor in self.neighbors:
             category = neighbor[1]
             distance = neighbor[0][1]
-
+            
             voteValue = 1 if not self.distance_weighted or distance == 0 else (1 / distance)
+
             classification[category] += voteValue
         
         # return most frequently occuring neighbor
+        if classification[1] == classification[-1]:
+            if self.k == 1: # Fall back to random classification
+                return 1 if random.randint(0, 1) == 1 else -1
+            self.k -= 1
+            return self.classify(instance)
 
 
         return 1 if classification[1] > classification[-1] else -1
