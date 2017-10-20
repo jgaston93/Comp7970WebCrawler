@@ -38,15 +38,26 @@ class K_Nearest(object):
         self.get_neighbors(instance)
 
         classification = {1: 0, -1: 0}
-
+        classificationWeighted = 0
+        accumulatedCategory = 0
+        accumulatedWeight = 0
+		
         for neighbor in self.neighbors:
             category = neighbor[1]
             distance = neighbor[0][1]
 
             voteValue = 1 if not self.distance_weighted or distance == 0 else (1 / distance)
             classification[category] += voteValue
+			
+            if distance == 0:
+                distance = 0.001
+            accumulatedWeight += 1 / distance
+            accumulatedCategory += (1 / distance)*category
         
         # return most frequently occuring neighbor
 
+        classificationWeighted = accumulatedCategory / accumulatedWeight
+        if self.distance_weighted:
+            return classificationWeighted
 
         return 1 if classification[1] > classification[-1] else -1
