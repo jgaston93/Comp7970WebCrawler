@@ -12,8 +12,10 @@ mask = []
 #g = GRNN(standard_deviation = 0.24)
 #print(leave_one_out_validation(g, dataset))
 
-kNN = K_Nearest(k=3, distance_weighted=True)
-print(leave_one_out_validation(kNN, dataset))
+kNN = K_Nearest(k=500, distance_weighted=True)
+#print(leave_one_out_validation(kNN, dataset))
+Feature_Evolution(kNN, dataset)
+print("doneski")
 
 #Feature_Evolution(g, dataset)
 

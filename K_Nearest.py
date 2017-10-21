@@ -22,7 +22,7 @@ class K_Nearest(object):
         distances = []
 
         for i in range(len(self.training_data)):
-            distance = euclidian_distance(instance, self.training_data[i][0])
+            distance = euclidian_distance(instance, self.training_data[i][0], self.feature_mask)
             distances.append((self.training_data[i], distance))
 
         distances.sort(key=operator.itemgetter(1))
@@ -37,6 +37,10 @@ class K_Nearest(object):
         """Loads new training data"""
         """training data format [(instance, label),(instance, label),...]"""
         self.training_data = training_data
+		
+    def set_feature_mask(self, feature_mask):
+        """Used to apply a new feature mask to the classifier"""
+        self.feature_mask = feature_mask
 
     def classify(self, instance):
         """Performs classification on the given instance"""
