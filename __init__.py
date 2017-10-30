@@ -1,26 +1,33 @@
 from GRNN import GRNN
-from Validation import leave_one_out_validation
+import Validation
 from Helpers import load_dataset
 from Evolution_Module import Feature_Evolution
 
 
-dataset = load_dataset("our_dataset.txt")
-feature_count = 0
-for c in "00110101101111110000111011101110010011001111001010011001101011111110110111110101101011110011111":
-    if c == "1":
-        feature_count = feature_count + 1
+dataset = load_dataset("trainingset_st.csv")
+#feature_count = 0
+#feature_mask = []
+#features = []
+#10001011111110100101100100011101
+#011010001001110011100010010001011101000010011101101110110000011101110001010110010110100111111110011100101010100111010110110100011010101010001101
 
-print(feature_count)
-#g = GRNN(training_data=dataset, standard_deviation = 0.0201)
-#print(leave_one_out_validation(g, dataset))
-#print(g.numZeros)
-#Feature_Evolution(g, dataset, population = 20, num_children = 6)
+#100100110101010100000101111111110101010110011110111100110001100001110011010011100110001111110100110001101100011010101111010111100010010011001010
+#with open("FeatureNames.txt", "r") as f:
+#    for feature,c in zip(f,"100100110101010100000101111111110101010110011110111100110001100001110011010011100110001111110100110001101100011010101111010111100010010011001010"):
+#        feature_mask.append(int(c))
+#        if c == "1":
+#            features.append(feature)
+#            feature_count += 1
 
-#for i in range(30, -1, -2):
-#        g.standard_deviation = i/1000
-#        accuracy, tp, tn, fp, fn, mse = leave_one_out_validation(g, dataset)
-#        print("std: {0} accuracy: {1}".format(i/1000, accuracy))
-#        print("MSE: {0}".format(mse))
-#        print("tp: {0} tn: {1} fp: {2} fn: {3}\n".format(tp, tn, fp, fn))
-#        with open("std_test_results.csv", "a") as f:
-#            f.write("{},{},{}\n".format(i/1000, accuracy, mse))
+#print(feature_count)
+g = GRNN(training_data=dataset, standard_deviation = .06)
+#print(Validation.leave_one_out_validation_aa(g, dataset))
+#Feature_Evolution(g, dataset, population = 100, num_children = 20, num_features = 144, generations = 5000)
+#with open("std_test_results.csv", "w") as f:
+#            f.write("{},{},{}\n".format(i/100, accuracy, mse))
+for i in range(700, -1, -1):
+        g.standard_deviation = i/10000
+        accuracy= Validation.leave_one_out_validation_aa(g, dataset)
+        print("std: {0} accuracy: {1}\n".format(i/10000, accuracy))
+#        #with open("std_sa_results.csv", "a") as f:
+#        #    f.write("{},{}\n".format(i/100, accuracy))
