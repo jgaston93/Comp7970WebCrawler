@@ -198,7 +198,7 @@ while len(stack) > 0:
         limit = 10
         result = clf.classify(clf_feature_vector)
 
-        result = checker.update(result)
+        result = checker.update(node[1], result)
 
         if result <= -0.5 and len(range1) < limit:
             range1.append((node[1], result, clf_feature_vector))

@@ -4,7 +4,8 @@ from Helpers import load_dataset
 from Evolution_Module import Feature_Evolution
 
 
-dataset = load_dataset("trainingset_st.csv")
+#dataset = load_dataset("trainingset_st.csv")
+dataset = load_dataset("our_dataset.txt")
 #feature_count = 0
 #feature_mask = []
 #features = []
@@ -25,9 +26,9 @@ g = GRNN(training_data=dataset, standard_deviation = .06)
 #Feature_Evolution(g, dataset, population = 100, num_children = 20, num_features = 144, generations = 5000)
 #with open("std_test_results.csv", "w") as f:
 #            f.write("{},{},{}\n".format(i/100, accuracy, mse))
-for i in range(700, -1, -1):
-        g.standard_deviation = i/10000
-        accuracy= Validation.leave_one_out_validation_aa(g, dataset)
-        print("std: {0} accuracy: {1}\n".format(i/10000, accuracy))
+# for i in range(700, -1, -1):
+#         g.standard_deviation = i/10000
+#         accuracy= Validation.leave_one_out_validation_aa(g, dataset)
+#         print("std: {0} accuracy: {1}\n".format(i/10000, accuracy))
 #        #with open("std_sa_results.csv", "a") as f:
 #        #    f.write("{},{}\n".format(i/100, accuracy))
