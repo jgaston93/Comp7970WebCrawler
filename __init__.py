@@ -6,22 +6,22 @@ from Evolution_Module import Feature_Evolution
 
 
 dataset = load_dataset("our_dataset.txt")
-mask = []
-#for c in "10100101010101011100110011111111100111100000111011011110000011001011110111100101101110101000111":
-#    mask.append(int(c))
-#g = GRNN(standard_deviation = 0.24)
+feature_count = 0
+for c in "00110101101111110000111011101110010011001111001010011001101011111110110111110101101011110011111":
+    if c == "1":
+        feature_count = feature_count + 1
+
+print(feature_count)
+#g = GRNN(training_data=dataset, standard_deviation = 0.0201)
 #print(leave_one_out_validation(g, dataset))
+#print(g.numZeros)
+#Feature_Evolution(g, dataset, population = 20, num_children = 6)
 
-kNN = K_Nearest(k=3, distance_weighted=True)
-print(leave_one_out_validation(kNN, dataset))
-
-#Feature_Evolution(g, dataset)
-
-#for i in range(168, 0, -1):
-#        g.standard_deviation = i/10000
+#for i in range(30, -1, -2):
+#        g.standard_deviation = i/1000
 #        accuracy, tp, tn, fp, fn, mse = leave_one_out_validation(g, dataset)
-#        print("std: {0} accuracy: {1}".format(i/10000, accuracy))
+#        print("std: {0} accuracy: {1}".format(i/1000, accuracy))
 #        print("MSE: {0}".format(mse))
 #        print("tp: {0} tn: {1} fp: {2} fn: {3}\n".format(tp, tn, fp, fn))
 #        with open("std_test_results.csv", "a") as f:
-#            f.write("{},{},{}\n".format(i/10000, accuracy, mse))
+#            f.write("{},{},{}\n".format(i/1000, accuracy, mse))

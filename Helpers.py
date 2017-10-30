@@ -13,8 +13,14 @@ def load_dataset(file_name):
             data_values = line.split(" ")
             label = float(data_values[1])
             temp = []
+            zero_vector = [0 for _ in range(95)]
             for value in data_values[2:97]:
                     temp.append(float(value))
+            
+            length_of_vector = euclidian_distance(temp, zero_vector)
+            if length_of_vector > 0:
+                for value in temp:
+                    value = value/length_of_vector
             instance = tuple(temp)
             dataset.append((instance, label))
         return dataset
