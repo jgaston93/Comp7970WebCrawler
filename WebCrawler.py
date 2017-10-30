@@ -4,6 +4,7 @@ from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
 from GRNN import GRNN
+from ThirdPartyChecker import ThirdPartyChecker
 import Helpers
 
 ###############################################################################################
@@ -153,6 +154,7 @@ class MyHTMLParser(HTMLParser):
 ##################################################################
 data = Helpers.load_dataset("our_dataset.txt")
 clf = GRNN(data, 0.11832)
+checker = ThirdPartyChecker()
 
 parser = MyHTMLParser()
 feature_set = {}
@@ -195,6 +197,9 @@ while len(stack) > 0:
         #print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
         limit = 10
         result = clf.classify(clf_feature_vector)
+
+        result = checker.update(result)
+
         if result <= -0.5 and len(range1) < limit:
             range1.append((node[1], result, clf_feature_vector))
         elif result > -0.5 and result <= 0 and len(range2) < limit:
@@ -206,10 +211,6 @@ while len(stack) > 0:
         if len(range1) == limit and len(range2) == limit and len(range3) == limit and len(range4) == limit:
             break
         print("{} {} {} {}".format(len(range1), len(range2), len(range3), len(range4)))
-
-
-
-        # TODO Ask this node if it is the solution
 
         # Save the html into text files
         #save_html(html_string, node[1])
