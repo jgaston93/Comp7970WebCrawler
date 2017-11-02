@@ -6,9 +6,12 @@ from Helpers import euclidian_distance
 class GRNN(object):
     """GRNN classifier"""
 
-    def __init__(self, training_data=[], standard_deviation=1.41, feature_mask =[1 for _ in range(95)], global_method=True, k=1):
+    def __init__(self, training_data=[], standard_deviation=1.41, feature_mask =None, global_method=True, k=1):
         self.training_data = training_data
-        self.feature_mask = feature_mask
+        if feature_mask == None:
+            self.feature_mask = [1 for _ in range(len(training_data[0][0]))]
+        else:
+            self.feature_mask = feature_mask
         self.standard_deviation = standard_deviation
         if not global_method:
             self.clusters = self._k_means_cluster_creator(training_data, k)
@@ -59,7 +62,7 @@ class GRNN(object):
         """training data format [(instance, label),(instance, label),...]"""
         self.training_data = training_data
 
-    def classify(self, instance, local=False):
+    def classify(self, instance):
         """Performs classification on the given instance"""
         numerator = 0
         denominator = 0

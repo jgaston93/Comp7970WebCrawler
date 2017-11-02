@@ -26,4 +26,5 @@ def load_dataset(file_name):
                 instance = tuple([x/magnitude_of_vector for x in temp])
             dataset.append((instance, label))
     
+    print("num features: {}\n".format(len(dataset[0][0])))
     return dataset
