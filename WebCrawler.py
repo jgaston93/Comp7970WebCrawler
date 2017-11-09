@@ -152,13 +152,13 @@ feature_set = {}
 level = 4
 different_branching_factor = 5
 same_branching_factor = 0
-seed_url = "https://recode.net"
+seed_url = "https://google.com"
 
 num_pages = 20
 pages_visted = 0
 
 dataset = load_dataset("our_dataset.txt")
-grnn = GRNN(dataset, standard_deviation = 0.24)
+grnn = GRNN(dataset)
 
 for i in range(level):
     # Initialize the stack with the seed URL
