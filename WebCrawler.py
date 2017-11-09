@@ -4,7 +4,7 @@ from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
 from GRNN import GRNN
-from Helpers import load_dataset
+import Helpers
 
 ###############################################################################################
 ### Feature set format:
@@ -110,11 +110,17 @@ def extract_unigram(url, html_string):
         key = str(feature)
         if key in feature_set[url][1]:
             feature_set[url][1][key] += 1
-
     for key in feature_set[url][1]:
-        feature_set[url][1][key] = feature_set[url][1][key]/len(html_string)
-
-    return feature_set[url]
+        feature_set[url][1][key] /= len(html_string)
+    
+    magnitude = sum(feature_set[url][1][key]*feature_set[url][1][key] for key in feature_set[url][1])**(1/2)
+    
+    for key in feature_set[url][1]:
+        feature_set[url][1][key] /= magnitude
+    clf_feature_vector = []
+    for key in feature_set[url][1]:
+        clf_feature_vector.append(feature_set[url][1][key])
+    return feature_set[url],clf_feature_vector
 
 # Saves the html as a text file
 def save_html(html_string, url):
@@ -145,26 +151,33 @@ class MyHTMLParser(HTMLParser):
 ##################################################################
 # SCRIPTING
 ##################################################################
+data = Helpers.load_dataset("our_dataset.txt")
+clf = GRNN(data, 0.11832)
 
 parser = MyHTMLParser()
 feature_set = {}
 # Outer loop for the iterative deepening
 level = 4
-different_branching_factor = 5
+different_branching_factor = 4
 same_branching_factor = 0
-seed_url = "https://google.com"
+seed_url = "http://google.com/"
+range1 = []
+range2 = []
+range3 = []
+range4 = []
 
-num_pages = 20
-pages_visted = 0
+limit = 200
+num_special = 0
+num_visited = 0
 
-dataset = load_dataset("our_dataset.txt")
-grnn = GRNN(dataset)
+first_results = []
+second_results = []
 
-for i in range(level):
+#for i in range(level):
     # Initialize the stack with the seed URL
-    stack = [(0, seed_url)]
+stack = [(0, seed_url)]
     # Start the DFS Search
-    while len(stack) > 0:
+while len(stack) > 0:
         # Pops off the top node of the stack and gets the raw HTML string
         node = stack.pop()
 
@@ -176,29 +189,59 @@ for i in range(level):
             continue
 
         # If the max depth has not been reached add the chilren nodes to the stack
-        if node[0] < i:
-            parse_html(html_string, node[1], node[0])
+        #if node[0] < i:
 
         # Skip feature extraction if it's already been done on this node
         if node[1] in feature_set:
             continue
+        
+        parse_html(html_string, node[1], node[0])
 
         # Uni-gram feature extraction
-        feature_vector = extract_unigram(node[1], html_string)
-        # print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
+        feature_vector, clf_feature_vector = extract_unigram(node[1], html_string)
+        #print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
+        result = clf.classify(clf_feature_vector)
+        print(result)
 
-        # Ask this node if it is the solution
-        clasifier_result = grnn.classify(feature_vector[1].values())
-        print(clasifier_result)
+        if abs(result) < 0.015:
+            num_special += 1
+            print('special range found')
 
+        num_visited += 1
+        if num_visited <= limit / 2:
+            first_results.append(result)
+        else:
+            second_results.append(result)
 
-        # Save the html into text files
-        save_html(html_string, node[1])
-        save_feature_vector(node[1])
-
-        pages_visted += 1
-        if pages_visted == num_pages:
-            print('doneski')
+        if num_visited == limit:
             break
 
-parser.close()
+        print(str(num_visited) + '/' + str(limit))
+
+        # Save the html into text files
+        #save_html(html_string, node[1])
+        save_feature_vector(node[1])
+
+# Calculate some std deviations
+print('Len of first results: ' + str(len(first_results)))
+print('Len of second results: ' + str(len(second_results)))
+print('Num special: ' + str(num_special))
+all = first_results
+all.extend(second_results)
+print('Mean for all: ' + str(Helpers.mean(all)))
+print('Std Dev for all: ' + str(Helpers.std_deviation(all)))
+print('Mean for first 100: ' + str(Helpers.mean(first_results)))
+print('Std Dev for first 100: ' + str(Helpers.std_deviation(first_results)))
+print('Mean for second 100: ' + str(Helpers.mean(second_results)))
+print('Std Dev for second 100: ' + str(Helpers.std_deviation(second_results)))
+
+#parser.close()
+with open("new_data.txt", "w") as f:
+    for url, label, vector in range1:
+        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
+    for url, label, vector in range2:
+        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
+    for url, label, vector in range3:
+        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
+    for url, label, vector in range4:
+        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
