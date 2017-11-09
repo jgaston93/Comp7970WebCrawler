@@ -3,6 +3,8 @@ from urllib.parse import urlsplit
 from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
+from GRNN import GRNN
+from Helpers import load_dataset
 
 ###############################################################################################
 ### Feature set format:
@@ -148,9 +150,15 @@ parser = MyHTMLParser()
 feature_set = {}
 # Outer loop for the iterative deepening
 level = 4
-different_branching_factor = 4
-same_branching_factor = 2
-seed_url = "http://asdf.com/"
+different_branching_factor = 5
+same_branching_factor = 0
+seed_url = "https://recode.net"
+
+num_pages = 20
+pages_visted = 0
+
+dataset = load_dataset("our_dataset.txt")
+grnn = GRNN(dataset, standard_deviation = 0.24)
 
 for i in range(level):
     # Initialize the stack with the seed URL
@@ -177,12 +185,20 @@ for i in range(level):
 
         # Uni-gram feature extraction
         feature_vector = extract_unigram(node[1], html_string)
-        print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
+        # print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
 
-        # TODO Ask this node if it is the solution
+        # Ask this node if it is the solution
+        clasifier_result = grnn.classify(feature_vector[1].values())
+        print(clasifier_result)
+
 
         # Save the html into text files
         save_html(html_string, node[1])
         save_feature_vector(node[1])
+
+        pages_visted += 1
+        if pages_visted == num_pages:
+            print('doneski')
+            break
 
 parser.close()
