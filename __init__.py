@@ -1,10 +1,12 @@
 from GRNN import GRNN
 import Validation
 from Helpers import load_dataset
-from Evolution_Module import Feature_Evolution
+from Evolution_Module import Feature_Evolution, Feature_Vector_Evolution
+import random
 
 
-dataset = load_dataset("trainingset_all.csv")
+#dataset = load_dataset("trainingset_st.csv")
+dataset = load_dataset("our_dataset.txt")
 #feature_count = 0
 #feature_mask = []
 #features = []
@@ -20,14 +22,17 @@ dataset = load_dataset("trainingset_all.csv")
 #            feature_count += 1
 
 #print(feature_count)
-g = GRNN(training_data=dataset, standard_deviation = .04)
+g = GRNN(training_data=dataset)
 #print(Validation.leave_one_out_validation_aa(g, dataset))
-Feature_Evolution(g, dataset, population = 100, num_children = 2, num_features = 176, generations = 8000)
+filename = "GA_Results"
+for i in range(10):
+    Feature_Vector_Evolution(g,filename + str(i), 2**i)
+#Feature_Evolution(g, dataset, population = 100, num_children = 20, num_features = 176, generations = 8000)
 #with open("std_test_results.csv", "w") as f:
 #            f.write("{},{},{}\n".format(i/100, accuracy, mse))
-#for i in range(700, -1, -10):
+#for i in range(700, -1, -1):
 #        g.standard_deviation = i/10000
 #        accuracy= Validation.leave_one_out_validation_aa(g, dataset)
 #        print("std: {0} accuracy: {1}\n".format(i/10000, accuracy))
-#        #with open("std_sa_results.csv", "a") as f:
-#        #    f.write("{},{}\n".format(i/100, accuracy))
+        #with open("std_sa_results.csv", "a") as f:
+        #    f.write("{},{}\n".format(i/100, accuracy))

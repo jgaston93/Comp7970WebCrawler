@@ -4,6 +4,7 @@ from urllib.request import urlopen
 from html.parser import HTMLParser
 import hashlib
 from GRNN import GRNN
+from ThirdPartyChecker import ThirdPartyChecker
 import Helpers
 
 ###############################################################################################
@@ -53,9 +54,9 @@ def parse_html(html, parent_url, parent_level):
             continue
         # Divide URLs based on there NetLoc produced from the urlsplit function
         child_split_result = urlsplit(child_url)
-        if len(same_domain) < same_branching_factor and child_split_result[1] == split_result[1]:
+        if child_split_result[1] == split_result[1]:
             same_domain.append((parent_level + 1, child_url))
-        elif len(different_domain) < different_branching_factor and child_split_result[1] != split_result[1]:
+        elif child_split_result[1] != split_result[1]:
             different_domain.append((parent_level + 1, child_url))
 
     # Add the different NetLocs on top so they get explored first
@@ -153,18 +154,18 @@ class MyHTMLParser(HTMLParser):
 ##################################################################
 data = Helpers.load_dataset("our_dataset.txt")
 clf = GRNN(data, 0.11832)
+checker = ThirdPartyChecker()
 
 parser = MyHTMLParser()
 feature_set = {}
 # Outer loop for the iterative deepening
 level = 4
-different_branching_factor = 4
-same_branching_factor = 2
-seed_url = "http://google.com/"
-range1 = []
-range2 = []
-range3 = []
-range4 = []
+seed_url = "http://auburn.edu/"
+#range1 = []
+#range2 = []
+#range3 = []
+#range4 = []
+pages = []
 
 #for i in range(level):
     # Initialize the stack with the seed URL
@@ -195,33 +196,30 @@ while len(stack) > 0:
         #print("Unigram feature set for " + node[1] + ":\n" + str(feature_vector))
         limit = 10
         result = clf.classify(clf_feature_vector)
-        if result <= -0.5 and len(range1) < limit:
-            range1.append((node[1], result, clf_feature_vector))
-        elif result > -0.5 and result <= 0 and len(range2) < limit:
-            range2.append((node[1], result, clf_feature_vector))
-        elif result > 0 and  result <= 0.5 and len(range3) < limit:
-            range3.append((node[1], result, clf_feature_vector))
-        elif result > 0.5 and len(range4) < limit:
-            range4.append((node[1], result, clf_feature_vector))
-        if len(range1) == limit and len(range2) == limit and len(range3) == limit and len(range4) == limit:
+        pages.append((result, clf_feature_vector))
+        if(len(pages)) == 200:
             break
-        print("{} {} {} {}".format(len(range1), len(range2), len(range3), len(range4)))
 
 
+        #new_result = checker.update(node[1], result)
 
-        # TODO Ask this node if it is the solution
+        #if result <= -0.5 and len(range1) < limit:
+        #    range1.append((node[1], result, new_result, clf_feature_vector))
+        #elif result > -0.5 and result <= 0 and len(range2) < limit:
+        #    range2.append((node[1], result, new_result, clf_feature_vector))
+        #elif result > 0 and  result <= 0.5 and len(range3) < limit:
+        #    range3.append((node[1], result, new_result, clf_feature_vector))
+        #elif result > 0.5 and len(range4) < limit:
+        #    range4.append((node[1], result, new_result, clf_feature_vector))
+        #if len(range1) == limit and len(range2) == limit and len(range3) == limit and len(range4) == limit:
+        #    break
+        #print("{} {} {} {}".format(len(range1), len(range2), len(range3), len(range4)))
 
         # Save the html into text files
         #save_html(html_string, node[1])
         save_feature_vector(node[1])
 
 #parser.close()
-with open("new_data.txt", "w") as f:
-    for url, label, vector in range1:
-        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
-    for url, label, vector in range2:
-        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
-    for url, label, vector in range3:
-        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
-    for url, label, vector in range4:
-        f.write("{} {} {}\n".format(url, label, " ".join([str(x) for x in vector])))
+with open("200pages.txt", "w") as f:
+    for page in pages:
+        f.write("{},{}\n".format(page[0], ",".join([str(x) for x in page[1]])))
