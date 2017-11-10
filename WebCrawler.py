@@ -157,10 +157,10 @@ clf = GRNN(data, 0.11832)
 parser = MyHTMLParser()
 feature_set = {}
 # Outer loop for the iterative deepening
-level = 4
+level = 30
 different_branching_factor = 4
-same_branching_factor = 0
-seed_url = "http://google.com/"
+same_branching_factor = 3
+seed_url = "http://asdf.com/"
 range1 = []
 range2 = []
 range3 = []
@@ -226,14 +226,17 @@ while len(stack) > 0:
 print('Len of first results: ' + str(len(first_results)))
 print('Len of second results: ' + str(len(second_results)))
 print('Num special: ' + str(num_special))
-all = first_results
-all.extend(second_results)
-print('Mean for all: ' + str(Helpers.mean(all)))
-print('Std Dev for all: ' + str(Helpers.std_deviation(all)))
+
+
 print('Mean for first 100: ' + str(Helpers.mean(first_results)))
 print('Std Dev for first 100: ' + str(Helpers.std_deviation(first_results)))
 print('Mean for second 100: ' + str(Helpers.mean(second_results)))
 print('Std Dev for second 100: ' + str(Helpers.std_deviation(second_results)))
+
+all = first_results
+all.extend(second_results)
+print('Mean for all: ' + str(Helpers.mean(all)))
+print('Std Dev for all: ' + str(Helpers.std_deviation(all)))
 
 #parser.close()
 with open("new_data.txt", "w") as f:
