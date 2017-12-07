@@ -25,8 +25,8 @@ dataset = load_dataset("our_dataset.txt")
 g = GRNN(training_data=dataset)
 #print(Validation.leave_one_out_validation_aa(g, dataset))
 filename = "GA_Results"
-for i in range(10):
-    Feature_Vector_Evolution(g,filename + str(i), 2**i)
+#for i in range(10):
+Feature_Vector_Evolution(g,filename + str(100), 2**0)
 #Feature_Evolution(g, dataset, population = 100, num_children = 20, num_features = 176, generations = 8000)
 #with open("std_test_results.csv", "w") as f:
 #            f.write("{},{},{}\n".format(i/100, accuracy, mse))
